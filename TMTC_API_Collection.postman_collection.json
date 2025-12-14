@@ -1,0 +1,888 @@
+{
+	"info": {
+		"_postman_id": "tmtc-api-collection",
+		"name": "TMTC API Collection",
+		"description": "Complete Postman collection for TMTC Travel Itinerary API - REST endpoints for authentication and itinerary management",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "tmtc-api"
+	},
+	"item": [
+		{
+			"name": "General",
+			"item": [
+				{
+					"name": "API Status",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								""
+							]
+						},
+						"description": "Check if API is running. Expected: 200 with status message"
+					},
+					"response": []
+				},
+				{
+					"name": "Health Check",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/health",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"health"
+							]
+						},
+						"description": "Health check endpoint. Returns API status, database connection, and timestamp. Expected: 200"
+					},
+					"response": []
+				}
+			],
+			"description": "General API endpoints"
+		},
+		{
+			"name": "Authentication",
+			"item": [
+				{
+					"name": "Register User",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 201) {",
+									"    var jsonData = pm.response.json();",
+									"    pm.environment.set(\"authToken\", jsonData.token);",
+									"    pm.environment.set(\"userId\", jsonData.user.id || jsonData.user._id);",
+									"    pm.environment.set(\"userEmail\", jsonData.user.email);",
+									"    console.log(\"Token saved:\", jsonData.token);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"email\": \"test@example.com\",\n    \"password\": \"password123\",\n    \"name\": \"Test User\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/auth/register",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"auth",
+								"register"
+							]
+						},
+						"description": "Register a new user. Returns JWT token and user object. Expected: 201"
+					},
+					"response": []
+				},
+				{
+					"name": "Register User - Duplicate Email (Should Fail)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"email\": \"test@example.com\",\n    \"password\": \"password123\",\n    \"name\": \"Test User\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/auth/register",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"auth",
+								"register"
+							]
+						},
+						"description": "Try to register with duplicate email. Expected: 400"
+					},
+					"response": []
+				},
+				{
+					"name": "Register User - Missing Fields (Should Fail)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"email\": \"test1@example.com\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/auth/register",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"auth",
+								"register"
+							]
+						},
+						"description": "Register with missing required fields (password, name). Expected: 400"
+					},
+					"response": []
+				},
+				{
+					"name": "Login",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 200) {",
+									"    var jsonData = pm.response.json();",
+									"    pm.environment.set(\"authToken\", jsonData.token);",
+									"    pm.environment.set(\"userId\", jsonData.user.id || jsonData.user._id);",
+									"    pm.environment.set(\"userEmail\", jsonData.user.email);",
+									"    console.log(\"Token saved:\", jsonData.token);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"email\": \"test@example.com\",\n    \"password\": \"password123\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/auth/login",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"auth",
+								"login"
+							]
+						},
+						"description": "Login with valid credentials. Returns JWT token and user object. Expected: 200"
+					},
+					"response": []
+				},
+				{
+					"name": "Login - Invalid Credentials (Should Fail)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"email\": \"test@example.com\",\n    \"password\": \"wrongpassword\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/auth/login",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"auth",
+								"login"
+							]
+						},
+						"description": "Login with invalid password. Expected: 401"
+					},
+					"response": []
+				},
+				{
+					"name": "Login - Missing Fields (Should Fail)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"email\": \"test@example.com\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/auth/login",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"auth",
+								"login"
+							]
+						},
+						"description": "Login with missing password. Expected: 400"
+					},
+					"response": []
+				}
+			],
+			"description": "Authentication endpoints for user registration and login"
+		},
+		{
+			"name": "Itineraries",
+			"item": [
+				{
+					"name": "Create Itinerary",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 201) {",
+									"    var jsonData = pm.response.json();",
+									"    if (jsonData.itinerary) {",
+									"        pm.environment.set(\"itineraryId\", jsonData.itinerary._id || jsonData.itinerary.id);",
+									"        console.log(\"Itinerary ID saved:\", jsonData.itinerary._id || jsonData.itinerary.id);",
+									"    }",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{authToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"title\": \"Paris Trip\",\n    \"destination\": \"Paris\",\n    \"startDate\": \"2024-06-01\",\n    \"endDate\": \"2024-06-05\",\n    \"activities\": [\n        {\n            \"time\": \"10:00\",\n            \"description\": \"Visit Eiffel Tower\",\n            \"location\": \"Eiffel Tower\"\n        },\n        {\n            \"time\": \"14:00\",\n            \"description\": \"Lunch at Le Jules Verne\",\n            \"location\": \"Eiffel Tower\"\n        }\n    ]\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/itineraries",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"itineraries"
+							]
+						},
+						"description": "Create a new itinerary. Requires authentication (Bearer token). Expected: 201"
+					},
+					"response": []
+				},
+				{
+					"name": "Create Itinerary - Without Auth (Should Fail)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"title\": \"Paris Trip\",\n    \"destination\": \"Paris\",\n    \"startDate\": \"2024-06-01\",\n    \"endDate\": \"2024-06-05\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/itineraries",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"itineraries"
+							]
+						},
+						"description": "Try to create itinerary without authentication. Expected: 401"
+					},
+					"response": []
+				},
+				{
+					"name": "Get All Itineraries",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{authToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/itineraries",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"itineraries"
+							]
+						},
+						"description": "Get all itineraries for authenticated user. Returns paginated results. Expected: 200"
+					},
+					"response": []
+				},
+				{
+					"name": "Get All Itineraries - Filter by Destination",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{authToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/itineraries?destination=Paris",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"itineraries"
+							],
+							"query": [
+								{
+									"key": "destination",
+									"value": "Paris",
+									"description": "Filter by destination name"
+								}
+							]
+						},
+						"description": "Get itineraries filtered by destination. Expected: 200 with filtered results"
+					},
+					"response": []
+				},
+				{
+					"name": "Get All Itineraries - Pagination",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{authToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/itineraries?page=1&limit=1",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"itineraries"
+							],
+							"query": [
+								{
+									"key": "page",
+									"value": "1",
+									"description": "Page number (default: 1)"
+								},
+								{
+									"key": "limit",
+									"value": "1",
+									"description": "Items per page (default: 10)"
+								}
+							]
+						},
+						"description": "Get itineraries with pagination. Expected: 200 with paginated results"
+					},
+					"response": []
+				},
+				{
+					"name": "Get All Itineraries - Sorting",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{authToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/itineraries?sort=-createdAt",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"itineraries"
+							],
+							"query": [
+								{
+									"key": "sort",
+									"value": "-createdAt",
+									"description": "Sort field (prefix with - for descending, default: createdAt)"
+								}
+							]
+						},
+						"description": "Get itineraries sorted by creation date (newest first). Expected: 200"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Itinerary by ID",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{authToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/itineraries/{{itineraryId}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"itineraries",
+								"{{itineraryId}}"
+							]
+						},
+						"description": "Get a specific itinerary by ID. Response is cached for 5 minutes. Expected: 200"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Itinerary by ID - No Cache",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{authToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/itineraries/{{itineraryId}}?nocache=true",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"itineraries",
+								"{{itineraryId}}"
+							],
+							"query": [
+								{
+									"key": "nocache",
+									"value": "true",
+									"description": "Bypass cache"
+								}
+							]
+						},
+						"description": "Get itinerary by ID bypassing cache. Expected: 200"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Itinerary by ID - Not Found (Should Fail)",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{authToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/itineraries/507f1f77bcf86cd799439011",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"itineraries",
+								"507f1f77bcf86cd799439011"
+							]
+						},
+						"description": "Get non-existent itinerary. Expected: 404"
+					},
+					"response": []
+				},
+				{
+					"name": "Update Itinerary",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{authToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"title\": \"Updated Paris Trip\",\n    \"destination\": \"Paris, France\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/itineraries/{{itineraryId}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"itineraries",
+								"{{itineraryId}}"
+							]
+						},
+						"description": "Update an itinerary. Only provided fields will be updated. Expected: 200"
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Itinerary",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{authToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/itineraries/{{itineraryId}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"itineraries",
+								"{{itineraryId}}"
+							]
+						},
+						"description": "Delete an itinerary. Expected: 200 with success message"
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Itinerary - Verify Deleted (Should Fail)",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{authToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/itineraries/{{itineraryId}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"itineraries",
+								"{{itineraryId}}"
+							]
+						},
+						"description": "Verify itinerary is deleted. Expected: 404"
+					},
+					"response": []
+				},
+				{
+					"name": "Generate Shareable Link",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 200) {",
+									"    var jsonData = pm.response.json();",
+									"    if (jsonData.shareableId) {",
+									"        pm.environment.set(\"shareableId\", jsonData.shareableId);",
+									"    } else if (jsonData.shareableUrl) {",
+									"        // Extract shareableId from URL",
+									"        var match = jsonData.shareableUrl.match(/share\\/([^\\/]+)/);",
+									"        if (match) {",
+									"            pm.environment.set(\"shareableId\", match[1]);",
+									"        }",
+									"    }",
+									"    console.log(\"Shareable ID saved:\", pm.environment.get(\"shareableId\"));",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{authToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/itineraries/{{itineraryId}}/share",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"itineraries",
+								"{{itineraryId}}",
+								"share"
+							]
+						},
+						"description": "Generate a shareable link for an itinerary. Returns shareableUrl and shareableId. Expected: 200"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Shared Itinerary (Public)",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/itineraries/share/{{shareableId}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"itineraries",
+								"share",
+								"{{shareableId}}"
+							]
+						},
+						"description": "Get a shared itinerary by shareableId. No authentication required (public endpoint). Expected: 200"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Shared Itinerary - Invalid ID (Should Fail)",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/itineraries/share/invalid-shareable-id",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"itineraries",
+								"share",
+								"invalid-shareable-id"
+							]
+						},
+						"description": "Get shared itinerary with invalid shareableId. Expected: 404"
+					},
+					"response": []
+				}
+			],
+			"description": "Itinerary management endpoints - CRUD operations, filtering, pagination, sorting, and sharing"
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "baseUrl",
+			"value": "http://localhost:5000",
+			"type": "string"
+		},
+		{
+			"key": "authToken",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "userId",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "userEmail",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "itineraryId",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "shareableId",
+			"value": "",
+			"type": "string"
+		}
+	]
+}
